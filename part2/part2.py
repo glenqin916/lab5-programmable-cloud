@@ -23,16 +23,23 @@ def wait_for_operation(compute, project, operation, zone=None):
         time.sleep(2)
 
 def create_snapshot(compute, project, zone, instance_name, snapshot_name):
-    # 1. Get the disk name from the instance
     instance = compute.instances().get(project=project, zone=zone, instance=instance_name).execute()
-    disk_name = instance['disks'][0]['deviceName'] # Usually same as instance name
+    
+    source_disk_name = instance['disks'][0]['source'].split('/')[-1]
+    
+    print(f"Found actual disk name: {source_disk_name}")
 
-    # 2. Create the snapshot
-    print(f"Creating snapshot {snapshot_name} from disk {disk_name}...")
-    snapshot_body = {'name': snapshot_name}
-    op = compute.disks().createSnapshot(project=project, zone=zone, disk=disk_name, body=snapshot_body).execute()
-    wait_for_operation(compute, project, op, zone=zone)
-    print("Snapshot created.")
+    snapshot_body = {
+        'name': snapshot_name,
+        'description': 'Snapshot of the configured Flask server'
+    }
+    
+    return compute.disks().createSnapshot(
+        project=project, 
+        zone=zone, 
+        disk=source_disk_name, 
+        body=snapshot_body
+    ).execute()
 
 def create_clone(compute, project, zone, name, snapshot_name):
     snapshot_link = f"projects/{project}/global/snapshots/{snapshot_name}"
