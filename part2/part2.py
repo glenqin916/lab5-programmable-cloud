@@ -50,7 +50,7 @@ def create_clone(compute, project, zone, name, snapshot_name):
         'metadata': {
             'items': [{
                 'key': 'startup-script',
-                'value': '#!/bin/bash\ncd /opt/flask-app/flask-tutorial\nexport FLASK_APP=flaskr\nnohup python3 -m flask run --host=0.0.0.0 --port=5000 > /var/log/flask_clone.log 2>&1 &'
+                'value': '#!/bin/bash\ncd /opt/flask-app/flask-tutorial\nexport FLASK_APP=flaskr\npython3 -m flask init-db\nnohup python3 -m flask run --host=0.0.0.0 --port=5000 > /var/log/flask_clone.log 2>&1 &'
             }]
         },
         'tags': {'items': ['flask-server']},
