@@ -52,7 +52,7 @@ def create_firewall_rule(compute, project):
     """Creates a firewall rule to allow traffic on port 5000."""
     firewall_body = {
         'name': 'allow-flask-5000',
-        'targetTags': [NETWORK_TAG],
+        'targetTags': ['flask-server'],
         'allowed': [{'IPProtocol': 'tcp', 'ports': [str(PORT)]}],
         'sourceRanges': ['0.0.0.0/0'],
         'description': 'Allow port 5000 for Lab 5'
