@@ -47,6 +47,12 @@ def create_clone(compute, project, zone, name, snapshot_name):
     config = {
         'name': name,
         'machineType': f"zones/{zone}/machineTypes/e2-micro",
+        'metadata': {
+            'items': [{
+                'key': 'startup-script',
+                'value': '#!/bin/bash\ncd /opt/flask-app/flask-tutorial\nexport FLASK_APP=flaskr\nnohup python3 -m flask run --host=0.0.0.0 --port=5000 > /var/log/flask_clone.log 2>&1 &'
+            }]
+        },
         'tags': {'items': ['flask-server']},
         'disks': [{
             'boot': True,
@@ -56,7 +62,8 @@ def create_clone(compute, project, zone, name, snapshot_name):
         'networkInterfaces': [{
             'network': 'global/networks/default',
             'accessConfigs': [{'type': 'ONE_TO_ONE_NAT'}]
-        }]
+        }],
+        
     }
     
     start_time = time.time()
