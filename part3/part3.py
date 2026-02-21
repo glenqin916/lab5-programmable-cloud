@@ -3,20 +3,17 @@ import os
 import googleapiclient.discovery
 import google.oauth2.service_account as service_account
 
-# 1. Load your service account credentials
 CRED_FILE = 'service-credentials.json'
 credentials = service_account.Credentials.from_service_account_file(CRED_FILE)
 project = os.getenv('GOOGLE_CLOUD_PROJECT') or 'YOUR_PROJECT_ID'
 service = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
 
-# 2. Read the helper files
 with open('vm1_logic.py', 'r') as f:
     vm1_logic_code = f.read()
 
 with open(CRED_FILE, 'r') as f:
     service_json = f.read()
 
-# This is what VM-2 will eventually run (the Flask app)
 vm2_startup_script = """#!/bin/bash
 apt-get update
 apt-get install -y python3 python3-pip git
@@ -30,8 +27,6 @@ python3 -m flask init-db
 nohup python3 -m flask run -h 0.0.0.0 -p 5000 > /var/log/flask_startup.log 2>&1 &
 """
 
-# 3. Define the startup script for VM-1
-# This script "unpacks" the metadata and executes the python logic
 vm1_startup = f"""#!/bin/bash
 mkdir -p /srv && cd /srv
 curl http://metadata/computeMetadata/v1/instance/attributes/service-credentials -H "Metadata-Flavor: Google" > service-credentials.json
