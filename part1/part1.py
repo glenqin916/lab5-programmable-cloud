@@ -11,12 +11,10 @@ import googleapiclient.errors
 credentials, project = google.auth.default()
 service = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
 
-# Configuration
 ZONE = 'us-west1-b'
 INSTANCE_NAME = 'lab5-part1-instance'
 PORT = 5000
 
-# This script runs automatically when the VM boots
 STARTUP_SCRIPT = """#!/bin/bash
 apt-get update
 apt-get install -y python3 python3-pip git
@@ -66,7 +64,7 @@ def create_firewall_rule(compute, project):
         op = compute.firewalls().insert(project=project, body=firewall_body).execute()
         wait_for_operation(compute, project, op)
     except googleapiclient.errors.HttpError as e:
-        if e.resp.status == 409: # Already exists
+        if e.resp.status == 409:
             print("Firewall rule already exists.")
         else: raise e
 
@@ -98,7 +96,6 @@ create_firewall_rule(service, project)
 op = create_instance(service, project, ZONE, INSTANCE_NAME)
 wait_for_operation(service, project, op, zone=ZONE)
 
-# Get IP to show the user
 instance_info = service.instances().get(project=project, zone=ZONE, instance=INSTANCE_NAME).execute()
 external_ip = instance_info['networkInterfaces'][0]['accessConfigs'][0]['natIP']
 
