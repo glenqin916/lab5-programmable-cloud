@@ -84,9 +84,19 @@ def snapshot_exists(compute, project, snapshot_name):
 
 # --- Main ---
 if not snapshot_exists(service, project, SNAPSHOT_NAME):
-    create_snapshot(service, project, ZONE, SOURCE_INSTANCE, SNAPSHOT_NAME)
+    op = create_snapshot(service, project, ZONE, SOURCE_INSTANCE, SNAPSHOT_NAME)
+    print("Waiting for snapshot creation...")
+    wait_for_operation(service, project, op)
 else:
     print(f"Snapshot already exists: {SNAPSHOT_NAME}")
+
+print("Ensuring snapshot is READY...")
+while True:
+    snap = service.snapshots().get(project=project, snapshot=SNAPSHOT_NAME).execute()
+    if snap['status'] == 'READY':
+        break
+    print(f"Snapshot status: {snap['status']}. Waiting...")
+    time.sleep(5)
 
 timings = []
 for i in range(1, NUM_CLONES + 1):
