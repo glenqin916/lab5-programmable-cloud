@@ -8,6 +8,7 @@ from googleapiclient.errors import HttpError
 credentials, project = google.auth.default()
 service = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
 
+# Configuration
 ZONE = 'us-west1-b'
 SOURCE_INSTANCE = 'lab5-part1-instance'
 SNAPSHOT_NAME = f'base-snapshot-{SOURCE_INSTANCE}'
@@ -23,6 +24,7 @@ def wait_for_operation(compute, project, operation, zone=None):
             return result
         time.sleep(2)
 
+# Creates instance snapshot
 def create_snapshot(compute, project, zone, instance_name, snapshot_name):
     instance = compute.instances().get(project=project, zone=zone, instance=instance_name).execute()
     
@@ -42,6 +44,7 @@ def create_snapshot(compute, project, zone, instance_name, snapshot_name):
         body=snapshot_body
     ).execute()
 
+# Create instance clones
 def create_clone(compute, project, zone, name, snapshot_name):
     snapshot_link = f"projects/{project}/global/snapshots/{snapshot_name}"
     
@@ -74,6 +77,7 @@ def create_clone(compute, project, zone, name, snapshot_name):
     
     return end_time - start_time
 
+# Check if snapshot exists (for debugging purposes)
 def snapshot_exists(compute, project, snapshot_name):
     try:
         compute.snapshots().get(project=project, snapshot=snapshot_name).execute()
@@ -91,6 +95,7 @@ if not snapshot_exists(service, project, SNAPSHOT_NAME):
 else:
     print(f"Snapshot already exists: {SNAPSHOT_NAME}")
 
+# Adding check to ensure snapshot is ready before any other actions
 print("Ensuring snapshot is READY...")
 while True:
     snap = service.snapshots().get(project=project, snapshot=SNAPSHOT_NAME).execute()
@@ -99,6 +104,7 @@ while True:
     print(f"Snapshot status: {snap['status']}. Waiting...")
     time.sleep(5)
 
+# Loops to create clones
 timings = []
 for i in range(1, NUM_CLONES + 1):
     clone_name = f"clone-{i}-{SOURCE_INSTANCE}"
@@ -107,6 +113,7 @@ for i in range(1, NUM_CLONES + 1):
     timings.append((clone_name, duration))
     print(f"Finished in {duration:.2f} seconds.")
 
+# Create TIMING file
 with open("TIMING.md", "w") as f:
     f.write("# Creation Timing Results\n\n")
     f.write("| Instance Name | Time (seconds) |\n")
