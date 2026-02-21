@@ -18,15 +18,16 @@ PORT = 5000
 
 # This script runs automatically when the VM boots
 STARTUP_SCRIPT = """#!/bin/bash
-sudo apt-get update
-sudo apt-get install -y python3 python3-pip git
+apt-get update
+apt-get install -y python3 python3-pip git
+mkdir -p /opt/flask-app
+cd /opt/flask-app
 git clone https://github.com/cu-csci-4253-datacenter/flask-tutorial
 cd flask-tutorial
-sudo python3 setup.py install
-sudo pip3 install -e .
+python3 -m pip install -e .
 export FLASK_APP=flaskr
-flask init-db
-nohup flask run -h 0.0.0.0 &
+python3 -m flask init-db
+nohup python3 -m flask run -h 0.0.0.0 -p 5000 > /var/log/flask_startup.log 2>&1 &
 """
 
 #
