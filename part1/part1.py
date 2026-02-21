@@ -14,7 +14,6 @@ service = googleapiclient.discovery.build('compute', 'v1', credentials=credentia
 # Configuration
 ZONE = 'us-west1-b'
 INSTANCE_NAME = 'lab5-part1-instance'
-NETWORK_TAG = 'flask-server'
 PORT = 5000
 
 # This script runs automatically when the VM boots
@@ -74,7 +73,7 @@ def create_instance(compute, project, zone, name):
     config = {
         'name': name,
         'machineType': f"zones/{zone}/machineTypes/e2-micro",
-        'tags': {'items': [NETWORK_TAG]}, # Links VM to the firewall rule
+        'tags': {'items': ['flask-server']},
         'disks': [{'boot': True, 'autoDelete': True, 'initializeParams': {'sourceImage': source_disk_image}}],
         'networkInterfaces': [{'network': 'global/networks/default', 'accessConfigs': [{'type': 'ONE_TO_ONE_NAT'}]}],
         'metadata': {'items': [{'key': 'startup-script', 'value': STARTUP_SCRIPT}]}
