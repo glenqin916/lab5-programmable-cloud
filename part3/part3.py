@@ -3,6 +3,7 @@ import os
 import googleapiclient.discovery
 import google.oauth2.service_account as service_account
 
+# Configuration
 CRED_FILE = 'service-credentials.json'
 credentials = service_account.Credentials.from_service_account_file(CRED_FILE)
 project = os.getenv('GOOGLE_CLOUD_PROJECT') or 'YOUR_PROJECT_ID'
@@ -14,6 +15,7 @@ with open('vm1_logic.py', 'r') as f:
 with open(CRED_FILE, 'r') as f:
     service_json = f.read()
 
+# Startup script for VM2 to run flask application
 vm2_startup_script = """#!/bin/bash
 apt-get update
 apt-get install -y python3 python3-pip git
@@ -27,6 +29,7 @@ python3 -m flask init-db
 nohup python3 -m flask run -h 0.0.0.0 -p 5000 > /var/log/flask_startup.log 2>&1 &
 """
 
+# Startup script to create VVM1 instance
 vm1_startup = f"""#!/bin/bash
 mkdir -p /srv && cd /srv
 curl http://metadata/computeMetadata/v1/instance/attributes/service-credentials -H "Metadata-Flavor: Google" > service-credentials.json
@@ -39,6 +42,7 @@ pip3 install --upgrade google-api-python-client google-auth
 python3 vm1_logic.py
 """
 
+# Launches first instance and passes uses VM2 script to create second instance
 def launch_vm1():
     config = {
         'name': 'lab5-vm1-controller',
