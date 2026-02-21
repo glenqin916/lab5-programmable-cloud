@@ -11,10 +11,12 @@ import googleapiclient.errors
 credentials, project = google.auth.default()
 service = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
 
+# Configuration
 ZONE = 'us-west1-b'
 INSTANCE_NAME = 'lab5-part1-instance'
 PORT = 5000
 
+# Startup script to launch flask application
 STARTUP_SCRIPT = """#!/bin/bash
 apt-get update
 apt-get install -y python3 python3-pip git
@@ -50,6 +52,7 @@ def wait_for_operation(compute, project, operation, zone=None):
         print('.', end='', flush=True)
         time.sleep(2)
 
+# Creates firewall rule
 def create_firewall_rule(compute, project):
     """Creates a firewall rule to allow traffic on port 5000."""
     firewall_body = {
@@ -68,6 +71,7 @@ def create_firewall_rule(compute, project):
             print("Firewall rule already exists.")
         else: raise e
 
+# Creates VM instance
 def create_instance(compute, project, zone, name):
     image_response = compute.images().getFromFamily(project='debian-cloud', family='debian-11').execute()
     source_disk_image = image_response['selfLink']
@@ -83,6 +87,7 @@ def create_instance(compute, project, zone, name):
     print(f"Creating instance {name}...")
     return compute.instances().insert(project=project, zone=zone, body=config).execute()
 
+#--------MAIN--------
 print("Your running instances are:")
 instances = list_instances(service, project, ZONE)
 
@@ -96,6 +101,7 @@ create_firewall_rule(service, project)
 op = create_instance(service, project, ZONE, INSTANCE_NAME)
 wait_for_operation(service, project, op, zone=ZONE)
 
+# Show IP address to user
 instance_info = service.instances().get(project=project, zone=ZONE, instance=INSTANCE_NAME).execute()
 external_ip = instance_info['networkInterfaces'][0]['accessConfigs'][0]['natIP']
 
