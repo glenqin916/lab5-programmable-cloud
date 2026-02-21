@@ -47,7 +47,7 @@ def create_clone(compute, project, zone, name, snapshot_name):
     config = {
         'name': name,
         'machineType': f"zones/{zone}/machineTypes/e2-micro",
-        'tags': {'items': ['flask-server']}, # Re-use Part 1 firewall tag
+        'tags': {'items': ['flask-server']},
         'disks': [{
             'boot': True,
             'autoDelete': True,
@@ -66,11 +66,21 @@ def create_clone(compute, project, zone, name, snapshot_name):
     
     return end_time - start_time
 
-# --- Main ---
-# Step 1: Create Snapshot
-create_snapshot(service, project, ZONE, SOURCE_INSTANCE, SNAPSHOT_NAME)
+def snapshot_exists(compute, project, snapshot_name):
+    try:
+        compute.snapshots().get(project=project, snapshot=snapshot_name).execute()
+        return True
+    except HttpError as e:
+        if e.resp.status == 404:
+            return False
+        raise
 
-# Step 2: Create 3 Clones and track timing
+# --- Main ---
+if not snapshot_exists(service, project, SNAPSHOT_NAME):
+    create_snapshot(service, project, ZONE, SOURCE_INSTANCE, SNAPSHOT_NAME)
+else:
+    print(f"Snapshot already exists: {SNAPSHOT_NAME}")
+
 timings = []
 for i in range(1, NUM_CLONES + 1):
     clone_name = f"clone-{i}-{SOURCE_INSTANCE}"
@@ -79,7 +89,6 @@ for i in range(1, NUM_CLONES + 1):
     timings.append((clone_name, duration))
     print(f"Finished in {duration:.2f} seconds.")
 
-# Step 3: Write to TIMING.md
 with open("TIMING.md", "w") as f:
     f.write("# Creation Timing Results\n\n")
     f.write("| Instance Name | Time (seconds) |\n")
