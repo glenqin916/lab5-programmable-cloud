@@ -18,11 +18,16 @@ with open(CRED_FILE, 'r') as f:
 
 # This is what VM-2 will eventually run (the Flask app)
 vm2_startup_script = """#!/bin/bash
-apt-get update && apt-get install -y python3-pip git
-git clone https://github.com/GoogleCloudPlatform/python-docs-samples.git
-cd python-docs-samples/appengine/standard_python3/hello_world
-pip3 install -r requirements.txt
-python3 main.py --host=0.0.0.0 --port=5000 &
+apt-get update
+apt-get install -y python3 python3-pip git
+mkdir -p /opt/flask-app
+cd /opt/flask-app
+git clone https://github.com/cu-csci-4253-datacenter/flask-tutorial
+cd flask-tutorial
+python3 -m pip install -e .
+export FLASK_APP=flaskr
+python3 -m flask init-db
+nohup python3 -m flask run -h 0.0.0.0 -p 5000 > /var/log/flask_startup.log 2>&1 &
 """
 
 # 3. Define the startup script for VM-1
