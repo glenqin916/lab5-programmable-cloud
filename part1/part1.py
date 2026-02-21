@@ -83,9 +83,14 @@ def create_instance(compute, project, zone, name):
     return compute.instances().insert(project=project, zone=zone, body=config).execute()
 
 print("Your running instances are:")
-for instance in list_instances(service, project, 'us-west1-b'):
-    print(instance['name'])
+instances = list_instances(service, project, ZONE)
 
+if instances:
+    for instance in instances:
+        print(instance['name'])
+else:
+    print("None")
+    
 create_firewall_rule(service, project)
 op = create_instance(service, project, ZONE, INSTANCE_NAME)
 wait_for_operation(service, project, op, zone=ZONE)
