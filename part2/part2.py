@@ -3,6 +3,7 @@ import os
 import time
 import googleapiclient.discovery
 import google.auth
+from googleapiclient.errors import HttpError
 
 credentials, project = google.auth.default()
 service = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
